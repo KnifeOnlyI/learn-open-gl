@@ -1,20 +1,29 @@
+#include <glad/glad.h>
 #include "window/Window.hpp"
 
 int main()
 {
-    gl::Window window {"sdf", 640, 480};
+    gl::Window window {"Learn OpenGL", 640, 480};
 
     bool play {true};
 
     while (play)
     {
-        while (SDL_PollEvent(window.getEvent()))
+        while (window.pollEvent())
         {
-            if (window.getEvent()->type == SDL_QUIT)
+            switch (window.getEvent()->window.type)
             {
-                play = false;
+                case SDL_QUIT:
+                    play = false;
+                case SDL_KEYDOWN:
+                    break;
             }
         }
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        window.swapBuffers();
     }
 
     return 0;

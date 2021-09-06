@@ -12,6 +12,10 @@ Window::Window(const std::string &title, unsigned int width, unsigned int height
         throw gl::SDLException(SDL_GetError());
     }
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
     _handle = SDL_CreateWindow(
         title.c_str(),
         SDL_WINDOWPOS_CENTERED,
@@ -43,6 +47,8 @@ Window::Window(const std::string &title, unsigned int width, unsigned int height
 
         throw gl::SDLException(SDL_GetError());
     }
+
+    SDL_GL_SetSwapInterval(1);
 }
 
 Window::~Window()
@@ -59,5 +65,15 @@ SDL_Window *Window::getHandle()
 SDL_Event *Window::getEvent()
 {
     return &_event;
+}
+
+bool Window::pollEvent()
+{
+    return SDL_PollEvent(&_event);
+}
+
+void Window::swapBuffers()
+{
+    SDL_GL_SwapWindow(_handle);
 }
 }

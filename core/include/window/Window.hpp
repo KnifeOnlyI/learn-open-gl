@@ -43,6 +43,18 @@ public:
      */
     SDL_Event *getEvent();
 
+    /**
+     * Poll envent queue
+     *
+     * @return TRUE if there are any pending events, or FALSE if there are none available.
+     */
+    bool pollEvent();
+
+    /**
+     * Swap the buffers
+     */
+    void swapBuffers();
+
 private:
 
     /** @var The handle SDL window */
