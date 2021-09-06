@@ -55,6 +55,16 @@ public:
      */
     void swapBuffers();
 
+    /**
+     * Clear the window with the specied color
+     *
+     * @param red The red color
+     * @param green The green color
+     * @param blue The blue color
+     * @param alpha The alpha color
+     */
+    static void clear(float red = 0.0f, float green = 0.0f, float blue = 0.0f, float alpha = 1.0f);
+
 private:
 
     /** @var The handle SDL window */
