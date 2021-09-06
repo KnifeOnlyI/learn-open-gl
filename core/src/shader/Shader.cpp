@@ -1,13 +1,15 @@
 #include <glad/glad.h>
+#include <file/FileService.hpp>
 
 #include "exception/GLException.hpp"
 #include "shader/Shader.hpp"
 
 namespace gl
 {
-Shader::Shader(ShaderType type, const std::string &source)
+Shader::Shader(ShaderType type, const std::string &filepath)
 {
-    const char *code {source.c_str()};
+    std::string sourceCode {gl::FileService::getContent(filepath)};
+    const char *code {sourceCode.c_str()};
     char infoLog[512];
     int success;
     GLenum shaderType;
@@ -32,7 +34,11 @@ Shader::Shader(ShaderType type, const std::string &source)
     {
         glGetShaderInfoLog(_handle, 512, nullptr, infoLog);
 
-        throw gl::GLException(infoLog);
+        throw gl::GLException(
+            boost::format("%1% cannot compile because : %2%") %
+            filepath %
+            infoLog
+        );
     }
 }
 

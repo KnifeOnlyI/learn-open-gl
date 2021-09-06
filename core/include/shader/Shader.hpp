@@ -29,9 +29,9 @@ public:
      * Create a new shader
      *
      * @param type The shader type
-     * @param source The shader's source code
+     * @param filepath The shader's source code filepath
      */
-    Shader(ShaderType type, const std::string &source);
+    Shader(ShaderType type, const std::string &filepath);
 
     /**
      * Destroy the shader

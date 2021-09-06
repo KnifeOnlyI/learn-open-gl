@@ -2,7 +2,6 @@
 
 #include "buffer/VertexArrayObject.hpp"
 #include "shader/ShaderProgram.hpp"
-#include "file/FileService.hpp"
 #include "buffer/Buffer.hpp"
 #include "window/Window.hpp"
 
@@ -10,8 +9,8 @@ int main()
 {
     gl::Window window {"Learn OpenGL", 640, 480};
 
-    gl::Shader vertexShader {gl::VERTEX, gl::FileService::getContent("vertex.shader")};
-    gl::Shader fragmentShader {gl::FRAGMENT, gl::FileService::getContent("fragment.shader")};
+    gl::Shader vertexShader {gl::VERTEX, "vertex.shader"};
+    gl::Shader fragmentShader {gl::FRAGMENT, "fragment.shader"};
     gl::ShaderProgram shaderProgram {vertexShader, fragmentShader};
 
     bool play {true};
@@ -45,6 +44,9 @@ int main()
     vbo.unbind();
     vao.unbind();
 
+    float hGap {0.0f};
+    float vGap {0.0f};
+
     while (play)
     {
         while (window.pollEvent())
@@ -60,6 +62,18 @@ int main()
                         case SDLK_ESCAPE:
                             play = false;
                             break;
+                        case SDLK_UP:
+                            vGap += 0.1f;
+                            break;
+                        case SDLK_DOWN:
+                            vGap -= 0.1f;
+                            break;
+                        case SDLK_LEFT:
+                            hGap -= 0.1f;
+                            break;
+                        case SDLK_RIGHT:
+                            hGap += 0.1f;
+                            break;
                     }
             }
         }
@@ -69,9 +83,10 @@ int main()
         shaderProgram.use();
         vao.bind();
 
-        shaderProgram.setFloat("colorMultiplier", 1.0f);
+        shaderProgram.setFloat("hGap", hGap);
+        shaderProgram.setFloat("vGap", vGap);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 
         window.swapBuffers();
     }
