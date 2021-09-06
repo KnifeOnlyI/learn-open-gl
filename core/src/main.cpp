@@ -2,39 +2,27 @@
 
 #include "buffer/VertexArrayObject.hpp"
 #include "shader/ShaderProgram.hpp"
+#include "file/FileService.hpp"
 #include "buffer/Buffer.hpp"
 #include "window/Window.hpp"
 
 int main()
 {
     gl::Window window {"Learn OpenGL", 640, 480};
-    gl::ShaderProgram shaderProgram {"#version 330 core\n"
-                                     "layout (location = 0) in vec3 aPos;\n"
-                                     "void main()\n"
-                                     "{\n"
-                                     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                                     "}\0",
-                                     "#version 330 core\n"
-                                     "uniform vec3 triangleColor;\n"
-                                     "out vec4 color;\n"
-                                     "void main()\n"
-                                     "{\n"
-                                     "   color = vec4(triangleColor, 1.0f);\n"
-                                     "}\n\0"
-    };
+
+    gl::Shader vertexShader {gl::VERTEX, gl::FileService::getContent("vertex.shader")};
+    gl::Shader fragmentShader {gl::FRAGMENT, gl::FileService::getContent("fragment.shader")};
+    gl::ShaderProgram shaderProgram {vertexShader, fragmentShader};
 
     bool play {true};
 
     float vertices[] = {
-        0.5f, 0.5f, 0.0f,  // top right
-        0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f, 0.5f, 0.0f   // top left
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
     };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
-    };
+
+    unsigned int indices[] = {0, 1, 2};
 
     gl::Buffer vbo;
     gl::Buffer ebo;
@@ -48,13 +36,14 @@ int main()
     ebo.bindTo(GL_ELEMENT_ARRAY_BUFFER);
     ebo.sendData(GL_STATIC_DRAW, indices, sizeof(indices));
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) nullptr);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     vbo.unbind();
     vao.unbind();
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while (play)
     {
@@ -80,10 +69,7 @@ int main()
         shaderProgram.use();
         vao.bind();
 
-        shaderProgram.setUniform3f("triangleColor", 0.5f, 1.0f, 1.0f);
-
-        // Set the value of uniform variable triangleColor in fragment shader
-        glUniform3f(shaderProgram.getUniformLocation("triangleColor"), 0.5f, 1.0f, 1.0f);
+        shaderProgram.setFloat("colorMultiplier", 1.0f);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
