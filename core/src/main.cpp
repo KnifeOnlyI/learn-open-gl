@@ -1,5 +1,10 @@
 #include <glad/glad.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+
+#include <exception/STBIException.hpp>
+#include <texture/Texture.hpp>
+
 #include "buffer/VertexArrayObject.hpp"
 #include "shader/ShaderProgram.hpp"
 #include "buffer/Buffer.hpp"
@@ -9,19 +14,27 @@ int main()
 {
     gl::Window window {"Learn OpenGL", 640, 480};
 
-    gl::Shader vertexShader {gl::VERTEX, "vertex.shader"};
-    gl::Shader fragmentShader {gl::FRAGMENT, "fragment.shader"};
+    gl::Shader vertexShader {gl::VERTEX, "resources/shaders/vertex.shader"};
+    gl::Shader fragmentShader {gl::FRAGMENT, "resources/shaders/fragment.shader"};
     gl::ShaderProgram shaderProgram {vertexShader, fragmentShader};
+
+    gl::Texture texture {"resources/textures/container.jpg"};
 
     bool play {true};
 
+    // [x,y,z, r,g,b, s,t]
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+        // Positions      // Colors         // Texture coords
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
     };
 
-    unsigned int indices[] = {0, 1, 2};
+    unsigned int indices[] = {
+        0, 1, 3,
+        1, 2, 3
+    };
 
     gl::Buffer vbo;
     gl::Buffer ebo;
@@ -35,17 +48,26 @@ int main()
     ebo.bindTo(GL_ELEMENT_ARRAY_BUFFER);
     ebo.sendData(GL_STATIC_DRAW, indices, sizeof(indices));
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) nullptr);
+    //Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) nullptr);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // Texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     vbo.unbind();
     vao.unbind();
 
     float hGap {0.0f};
     float vGap {0.0f};
+
+    shaderProgram.use();
+    shaderProgram.setInt("imageTexture", 0);
 
     while (play)
     {
@@ -81,12 +103,16 @@ int main()
         gl::Window::clear();
 
         shaderProgram.use();
+
+        glActiveTexture(GL_TEXTURE0);
+        texture.bind(GL_TEXTURE_2D);
+
         vao.bind();
 
         shaderProgram.setFloat("hGap", hGap);
         shaderProgram.setFloat("vGap", vGap);
 
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         window.swapBuffers();
     }
